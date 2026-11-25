@@ -10,6 +10,7 @@ Este guia fornece heurísticas determinísticas para detecção da stack tecnol�
 |---|---|---|
 | **Python** | `requirements.txt`, `Pipfile`, `pyproject.toml`, `setup.py`, arquivos `.py` | - **Flask**: Presença de `flask`, `Flask(__name__)`, `Blueprint`, `app.route`<br>- **FastAPI**: Presença de `fastapi`, `FastAPI()`, `APIRouter`<br>- **Django**: Presença de `manage.py`, `django`, `settings.py`, `models.py` |
 | **JavaScript / TypeScript** | `package.json`, `tsconfig.json`, arquivos `.js`, `.mjs`, `.ts` | - **Express**: Presença de `"express"` em `dependencies`, `express()`<br>- **NestJS**: Presença de `@nestjs/core`, decorators `@Controller`, `@Injectable`<br>- **Fastify**: Presença de `"fastify"`, `fastify()` |
+| **C# / .NET** | Arquivos `*.csproj`, `*.sln`, `Program.cs`, `Startup.cs`, `appsettings.json`, arquivos `.cs` | - **ASP.NET Core Controllers**: Presença de `Microsoft.AspNetCore.Mvc`, `[ApiController]`, `ControllerBase`, `builder.Services.AddControllers()`<br>- **Minimal APIs**: Presença de `WebApplication.CreateBuilder()`, `app.MapGet()`, `app.MapPost()`<br>- **WCF / ASP.NET MVC Clássico**: Presença de `System.Web.Mvc`, `Global.asax`, `web.config` |
 | **Go** | `go.mod`, `go.sum`, arquivos `.go` | - **Gin**: `github.com/gin-gonic/gin`<br>- **Echo**: `github.com/labstack/echo`<br>- **Fiber**: `github.com/gofiber/fiber` |
 | **Java / Kotlin** | `pom.xml`, `build.gradle`, `.java`, `.kt` | - **Spring Boot**: `org.springframework.boot` |
 
@@ -20,10 +21,14 @@ Este guia fornece heurísticas determinísticas para detecção da stack tecnol�
 1. **SQLite**:
    - Python: `import sqlite3`, `sqlite3.connect()`, arquivos `.db`, `.sqlite`.
    - Node.js: `sqlite3`, `better-sqlite3`, `new sqlite3.Database()`.
-2. **PostgreSQL / MySQL / MariaDB**:
+   - C# / .NET: `Microsoft.Data.Sqlite`, `Microsoft.EntityFrameworkCore.Sqlite`.
+2. **PostgreSQL / MySQL / SQL Server**:
    - Python: `psycopg2`, `asyncpg`, `mysql-connector-python`, `PyMySQL`.
    - Node.js: `pg`, `mysql2`, `typeorm`, `prisma`, `knex`, `sequelize`.
+   - C# / .NET: `Npgsql`, `Microsoft.Data.SqlClient`, `MySqlConnector`.
 3. **ORMs e Abstrações**:
+   - `Entity Framework Core (EF Core)`: `DbContext`, `DbSet<T>`, `OnModelCreating`, `Microsoft.EntityFrameworkCore`.
+   - `Dapper`: Micro-ORM com métodos de extensão em `IDbConnection` (`QueryAsync`, `ExecuteAsync`).
    - `SQLAlchemy` / `flask_sqlalchemy`: `db.Model`, `db.Column()`, `db.session`.
    - `Prisma`, `Mongoose` (`mongoose.model`), `TypeORM`.
 

@@ -83,7 +83,7 @@ A Skill foi desenhada com separação estrita entre o **orquestrador de fluxo** 
     └── refactoring-playbook.md       # 9 padrões concretos de transformação com exemplos Antes/Depois
 ```
 
-- **Fase 1 (Project Analysis)**: Varre manifestos (`requirements.txt`, `package.json`), detecta dependências, entidades e padrão atual, exibindo o banner padronizado de análise.
+- **Fase 1 (Project Analysis)**: Varre manifestos (`requirements.txt`, `package.json`, `*.csproj`), detecta dependências, entidades e padrão atual, exibindo o banner padronizado de análise.
 - **Fase 2 (Architecture Audit)**: Cruza o código contra o catálogo de anti-patterns, detecta APIs deprecated, ordena os findings por severidade (`CRITICAL` -> `HIGH` -> `MEDIUM` -> `LOW`) e **obrigatoriamente pausa** para confirmação humana (`Proceed with refactoring (Phase 3)? [y/n]`).
 - **Fase 3 (Refactoring Complete)**: Cria a estrutura de diretórios MVC, extrai configurações, parametriza queries, substitui criptografia fraca, resolve N+1 e valida boot e integridade dos endpoints.
 
@@ -109,10 +109,10 @@ O catálogo foi estruturado com base nas vulnerabilidades e falhas reais observa
 
 ### 3. Garantia de Agnosticismo Tecnológico
 
-Para funcionar em Python (Flask/SQLAlchemy), Node.js (Express) ou qualquer outra stack:
+Para funcionar em Python (Flask/SQLAlchemy), Node.js (Express), C# (.NET / ASP.NET Core) ou qualquer outra stack:
 - As heurísticas analisam **conceitos arquiteturais**, não apenas palavras-chave de uma única sintaxe.
 - O catálogo avalia responsabilidades de camadas (ex: rota chamando banco diretamente é um anti-pattern em qualquer linguagem).
-- O playbook contém exemplos concretos e idiomáticos para **Python** e **Node.js/JavaScript**, permitindo que o agente aplique a transformação correta de acordo com a stack detectada na Fase 1.
+- O playbook contém exemplos concretos e idiomáticos para **Python**, **Node.js/JavaScript** e **C# / .NET** (ASP.NET Core Controllers, Entity Framework Core, Dapper, PBKDF2), permitindo que o agente aplique a transformação correta de acordo com a stack detectada na Fase 1.
 
 ### 4. Desafios Encontrados e Soluções
 

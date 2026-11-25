@@ -16,10 +16,10 @@ A execução é estritamente dividida em **3 fases sequenciais**:
 O objetivo desta fase é mapear a stack tecnológica, o domínio de negócio e a topologia arquitetural existente sem realizar nenhuma alteração de arquivos.
 
 ### Passos de Execução:
-1. Ler os manifestos de dependências presentes (`package.json`, `requirements.txt`, `pyproject.toml`, `go.mod`, `pom.xml`, etc.).
+1. Ler os manifestos de dependências presentes (`package.json`, `requirements.txt`, `pyproject.toml`, `*.csproj`, `*.sln`, `go.mod`, `pom.xml`, etc.).
 2. Identificar:
-   - **Linguagem**: Python, JavaScript/Node.js, TypeScript, etc.
-   - **Framework Web**: Flask, Express, FastAPI, Django, NestJS, etc., com versão.
+   - **Linguagem**: Python, JavaScript/Node.js, TypeScript, C# (.NET), etc.
+   - **Framework Web**: Flask, Express, FastAPI, Django, NestJS, ASP.NET Core (Controllers / Minimal APIs), etc., com versão.
    - **Dependências Principais**: ORMs, drivers de banco, bibliotecas de autenticação/utilitários.
    - **Domínio**: Entidades principais identificadas nos nomes de arquivos, tabelas e rotas (ex: E-commerce, LMS/Cursos, Task Manager).
    - **Arquitetura Atual**: Monolítica desestruturada, código espaguete, arquitetura em camadas parcial, etc.
@@ -85,7 +85,7 @@ O objetivo desta fase é reestruturar o projeto no padrão **MVC (Model-View-Con
    - `controllers/` (ou `src/controllers/`): Orquestradores de requisição/resposta, validação de payload e coordenação dos models, isolando a regra de negócio das rotas HTTP.
    - `views/` ou `routes/` (ou `src/routes/`): Definição estrita de endpoints, métodos HTTP e mapeamento para seus respectivos controllers.
    - `middlewares/` (ou `src/middlewares/`): Tratamento centralizado de erros e filtros de requisição.
-   - Entrypoint principal (`app.py` ou `src/app.js`): Composition root limpo, registrando middlewares, rotas e inicializando o servidor.
+   - Entrypoint principal (`app.py`, `src/app.js` ou `Program.cs`): Composition root limpo, registrando middlewares, rotas/endpoints e inicializando o servidor.
 3. Aplicar as transformações do playbook:
    - Eliminar God Classes e separar responsabilidades por entidade/domínio.
    - Substituir concatenações SQL por consultas parametrizadas com bind variables.

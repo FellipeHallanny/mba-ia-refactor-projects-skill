@@ -43,6 +43,41 @@ pedido_bp = Blueprint("pedidos", __name__)
 pedido_bp.route("/pedidos", methods=["POST"])(PedidoController.criar_pedido)
 ```
 
+### Antes (C# / .NET):
+```csharp
+// Program.cs ou GodController.cs acumulando tudo
+app.MapPost("/pedidos", (PedidoDto dto, SqlConnection conn) => {
+    // Queries diretas com SQL concatenado, regras de estoque e cálculos de desconto
+    var cmd = new SqlCommand($"INSERT INTO Pedidos VALUES ('{dto.UsuarioId}', {dto.Total})", conn);
+    cmd.ExecuteNonQuery();
+    return Results.Ok();
+});
+```
+
+### Depois (C# - MVC):
+```csharp
+// Models/Pedido.cs
+public class Pedido {
+    public int Id { get; set; }
+    public int UsuarioId { get; set; }
+    public decimal Total { get; set; }
+}
+
+// Controllers/PedidosController.cs
+[ApiController]
+[Route("api/[controller]")]
+public class PedidosController : ControllerBase {
+    private readonly IPedidoService _pedidoService;
+    public PedidosController(IPedidoService pedidoService) => _pedidoService = pedidoService;
+
+    [HttpPost]
+    public async Task<IActionResult> CriarPedido([FromBody] CriarPedidoDto dto) {
+        var pedido = await _pedidoService.CriarPedidoComEstoqueAsync(dto);
+        return CreatedAtAction(nameof(CriarPedido), new { id = pedido.Id }, pedido);
+    }
+}
+```
+
 ---
 
 ## Padrão 2: SQL Injection -> Consultas Parametrizadas (Bind Variables)
@@ -60,6 +95,11 @@ cursor.execute("INSERT INTO usuarios (nome, email) VALUES ('" + nome + "', '" + 
 // Node.js
 db.run("DELETE FROM users WHERE id = " + id);
 ```
+```csharp
+// C# / .NET (Vulnerável)
+var user = _context.Users.FromSqlRaw($"SELECT * FROM Users WHERE Email = '{email}'").FirstOrDefault();
+var rows = conn.Query($"SELECT * FROM Products WHERE Id = {id}");
+```
 
 ### Depois:
 ```python
@@ -70,6 +110,11 @@ cursor.execute("INSERT INTO usuarios (nome, email) VALUES (?, ?)", (nome, email)
 ```javascript
 // Node.js (SQLite com ?)
 db.run("DELETE FROM users WHERE id = ?", [id], callback);
+```
+```csharp
+// C# / .NET (Parametrizado Seguro)
+var user = await _context.Users.FromSqlInterpolated($"SELECT * FROM Users WHERE Email = {email}").FirstOrDefaultAsync();
+var rows = await conn.QueryAsync<Product>("SELECT * FROM Products WHERE Id = @Id", new { Id = id });
 ```
 
 ---
@@ -110,6 +155,17 @@ module.exports = {
     paymentGatewayKey: process.env.PAYMENT_GATEWAY_KEY || "dev_gateway_key",
     smtpUser: process.env.SMTP_USER || "no-reply@dev.local"
 };
+```
+```csharp
+// C# / .NET (appsettings.json + IConfiguration / Options Pattern)
+// appsettings.json: { "Security": { "SecretKey": "...", "GatewayKey": "..." } }
+public class SecurityOptions {
+    public string SecretKey { get; set; } = string.Empty;
+    public string GatewayKey { get; set; } = string.Empty;
+}
+
+// Program.cs:
+builder.Services.Configure<SecurityOptions>(builder.Configuration.GetSection("Security"));
 ```
 
 ---
@@ -171,6 +227,27 @@ function verifyPassword(stored, password) {
     return crypto.timingSafeEqual(Buffer.from(hash), Buffer.from(checkHash));
 }
 ```
+```csharp
+// C# / .NET (Hash seguro com PBKDF2 ou ASP.NET Core PasswordHasher)
+using System.Security.Cryptography;
+
+public static class PasswordHelper {
+    public static string HashPassword(string password) {
+        byte[] salt = RandomNumberGenerator.GetBytes(16);
+        byte[] hash = Rfc2898DeriveBytes.Pbkdf2(password, salt, 100_000, HashAlgorithmName.SHA256, 32);
+        return $"{Convert.ToHexString(salt)}:{Convert.ToHexString(hash)}";
+    }
+
+    public static bool VerifyPassword(string stored, string password) {
+        if (!stored.Contains(':')) return false;
+        var parts = stored.Split(':');
+        byte[] salt = Convert.FromHexString(parts[0]);
+        byte[] expectedHash = Convert.FromHexString(parts[1]);
+        byte[] actualHash = Rfc2898DeriveBytes.Pbkdf2(password, salt, 100_000, HashAlgorithmName.SHA256, 32);
+        return CryptographicOperations.FixedTimeEquals(expectedHash, actualHash);
+    }
+}
+```
 
 ---
 
@@ -208,6 +285,23 @@ if (!user) {
 
 const enrResult = await db.runAsync("INSERT INTO enrollments (user_id, course_id) VALUES (?, ?)", [user.id, courseId]);
 await db.runAsync("INSERT INTO payments (enrollment_id, amount, status) VALUES (?, ?, ?)", [enrResult.lastID, course.price, "PAID"]);
+```
+
+### C# / .NET — Sync-over-Async (.Result / .Wait):
+```csharp
+// Antes (Bloqueante, risco de thread starvation):
+[HttpGet("{id}")]
+public IActionResult GetProduct(int id) {
+    var product = _productService.GetByIdAsync(id).Result; // Bloqueio síncrono perigoso
+    return Ok(product);
+}
+
+// Depois (Totalmente Assíncrono com await):
+[HttpGet("{id}")]
+public async Task<IActionResult> GetProduct(int id) {
+    var product = await _productService.GetByIdAsync(id);
+    return product is null ? NotFound() : Ok(product);
+}
 ```
 
 ---
@@ -254,6 +348,22 @@ for row in rows:
             "quantidade": row["quantidade"], "preco_unitario": row["preco_unitario"]
         })
 return list(pedidos_map.values())
+```
+
+### C# / .NET — N+1 em Entity Framework Core:
+```csharp
+// Antes (N+1: query inicial + queries em loop):
+var orders = await _context.Orders.ToListAsync();
+foreach (var o in orders) {
+    o.Items = await _context.OrderItems.Where(i => i.OrderId == o.Id).ToListAsync();
+}
+
+// Depois (Eager Loading otimizado em query única com JOIN):
+var orders = await _context.Orders
+    .Include(o => o.Items)
+        .ThenInclude(i => i.Product)
+    .AsNoTracking()
+    .ToListAsync();
 ```
 
 ---
@@ -315,6 +425,20 @@ created_at = datetime.now(timezone.utc)
 
 # SQLAlchemy moderno: db.session.get(Model, id)
 user = db.session.get(User, user_id)
+```
+
+```csharp
+// C# / .NET — APIs Obsoletas e Inseguras
+// Antes (Obsoleto / Inseguro):
+BinaryFormatter formatter = new BinaryFormatter();
+var data = formatter.Deserialize(stream); // SYSLIB0011 no .NET 7/8/9
+
+MD5 md5 = MD5.Create();
+byte[] hash = md5.ComputeHash(Encoding.UTF8.GetBytes(password));
+
+// Depois (Moderno, serialização JSON segura e SHA-256):
+var data = await JsonSerializer.DeserializeAsync<MyDataDto>(stream);
+byte[] hash = SHA256.HashData(Encoding.UTF8.GetBytes(password));
 ```
 
 ---

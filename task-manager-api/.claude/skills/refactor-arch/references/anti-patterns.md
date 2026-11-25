@@ -13,7 +13,10 @@ Falhas graves de arquitetura ou segurança que expõem a aplicação a compromet
    - **Sinais**: Arquivo ou classe única que assume múltiplas responsabilidades vitais (DDL do banco, queries SQL diretas, regras de negócio de múltiplos domínios, manipulação de HTTP, formatação de respostas e agendamento). Ex: `AppManager.js` com rotas, DB, pagamentos e logs; ou `models.py` contendo lógica de produtos, usuários, pedidos e relatórios juntos.
    - **Impacto**: Impossibilidade de testes unitários, altíssimo risco de regressão, forte acoplamento.
 2. **SQL Injection & Unsanitized Queries**:
-   - **Sinais**: Concatenação direta de strings ou formatação (`+`, `f"..."`, `${}`) com dados originados de requisições HTTP em queries SQL (ex: `"SELECT * FROM produtos WHERE id = " + str(id)` ou `"WHERE email = '" + email + "'"`).
+   - **Sinais**: Concatenação direta de strings ou interpolação com dados de requisições HTTP em queries SQL:
+     - Python: `"SELECT * FROM produtos WHERE id = " + str(id)` ou `f"WHERE email = '{email}'"`
+     - Node.js: `"SELECT * FROM users WHERE email = '" + req.body.email + "'"`
+     - C# / .NET: `_context.Database.SqlQueryRaw($"SELECT * FROM Users WHERE Id = {id}")`, `FromSqlRaw($"... {id}")` ou Dapper `conn.Query($"SELECT * FROM Users WHERE Email = '{email}'")` sem objeto anônimo de parâmetros.
    - **Impacto**: Risco total de exfiltração, adulteração ou destruição do banco de dados.
 3. **Hardcoded Secrets & Credential Exposure**:
    - **Sinais**: Chaves de criptografia (`SECRET_KEY`), senhas de banco (`dbPass`), chaves de gateway de pagamento (`paymentGatewayKey = "pk_live_..."`) ou credenciais SMTP gravadas no código-fonte.
@@ -42,9 +45,11 @@ Fortes violações do padrão MVC ou princípios SOLID que dificultam severament
 9. **Global Mutable State & Unsafe Concurrency**:
    - **Sinais**: Variáveis globais mutáveis no módulo (ex: `let globalCache = {}`, `let totalRevenue = 0` ou conexão global `db_connection` com `check_same_thread=False` em Python).
    - **Impacto**: Condições de corrida (race conditions), inconsistência entre requisições concorrentes e comportamento não idempotente.
-10. **Synchronous Blocking I/O in Request Cycle**:
-    - **Sinais**: Chamadas síncronas bloqueantes de rede ou disco dentro do ciclo de vida da requisição HTTP (ex: conexão SMTP direta com `smtplib.SMTP` disparada inline na criação de uma task).
-    - **Impacto**: Esgotamento do pool de threads/event loop e lentidão para todos os usuários.
+10. **Synchronous Blocking I/O & Sync-Over-Async**:
+    - **Sinais**:
+      - Conexões síncronas bloqueantes de rede ou disco durante a requisição HTTP (ex: `smtplib.SMTP` direto em Python).
+      - C# / .NET: Padrão **Sync-over-Async** bloqueando threads com `.Result`, `.Wait()` ou `.GetAwaiter().GetResult()` sobre `Task` assíncrona, provocando thread pool starvation e deadlocks no ASP.NET.
+    - **Impacto**: Esgotamento do pool de threads, contenção de conexões e travamento da aplicação sob concorrência.
 
 ---
 
@@ -58,7 +63,11 @@ Problemas de padronização, duplicação de código, gargalos de performance e 
     - **Sinais**:
       - Python: Uso de `datetime.utcnow()` (deprecated desde Python 3.12 em prol de `datetime.now(timezone.utc)`).
       - SQLAlchemy / Flask-SQLAlchemy: Uso do padrão de consulta legado `Model.query.get(id)` (descontinuado no SQLAlchemy 2.0 em favor de `db.session.get(Model, id)`).
-      - Node.js: Uso de métodos obsoletos de buffer ou padrões legados sem tratamento assíncrono.
+      - Node.js: Uso de métodos obsoletos de buffer (`new Buffer()`) ou padrões legados sem tratamento assíncrono.
+      - C# / .NET:
+        - `BinaryFormatter` (inseguro e obsoleto com `SYSLIB0011` no .NET 7/8/9 em favor de `System.Text.Json`).
+        - `MD5CryptoServiceProvider` / `SHA1Managed` (obsoletos em prol de `SHA256.HashData` ou `Rfc2898DeriveBytes`).
+        - `app.UseEndpoints(endpoints => ...)` e `IHostingEnvironment` (obsoletos no ASP.NET Core moderno em prol de top-level route mapping e `IWebHostEnvironment`).
     - **Impacto**: Quebra de compatibilidade em upgrades de versão de bibliotecas e runtime.
 13. **Swallowed / Bare Exception Handling**:
     - **Sinais**: Blocos `except:` sem especificar a classe de exceção, ou `try/catch` que apenas retornam uma mensagem genérica sem registrar o stack trace.

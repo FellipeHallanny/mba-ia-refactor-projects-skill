@@ -363,17 +363,26 @@ All tests passed! Server closed.
 ### Pré-requisitos
 - **Node.js** (v18+) e **npm** instalados;
 - **Python** (3.10+) e **pip** instalados;
-- Ferramenta agêntica com suporte a Custom Skills (ex: **Claude Code**, **Gemini CLI** ou **Antigravity**).
+- Ferramenta agêntica com suporte a Custom Skills:
+  - **Antigravity (AGY)**: Utiliza a pasta `.agents/skills/refactor-arch/` e a regra `GEMINI.md`;
+  - **Claude Code**: Utiliza a pasta `.claude/skills/refactor-arch/`;
+  - **Gemini CLI / Codex**: Compatível com `.agents/skills/` e manifestos padrão.
 
 ### Execução da Skill por Projeto
 
 #### Projeto 1 — `code-smells-project`
 ```bash
 cd code-smells-project
-# Invocar a skill pelo comando registrado na ferramenta
+
+# No Claude Code:
 claude "/refactor-arch"
 
-# Para rodar a aplicação refatorada
+# No Antigravity:
+# Digite /refactor-arch no chat ou execute via agy CLI
+```
+
+Para rodar a aplicação refatorada:
+```bash
 pip install -r requirements.txt
 python app.py
 ```
@@ -386,10 +395,16 @@ curl http://localhost:5000/health
 #### Projeto 2 — `ecommerce-api-legacy`
 ```bash
 cd ecommerce-api-legacy
-# Invocar a skill pelo comando registrado na ferramenta
+
+# No Claude Code:
 claude "/refactor-arch"
 
-# Para rodar a aplicação refatorada
+# No Antigravity:
+# Digite /refactor-arch no chat ou execute via agy CLI
+```
+
+Para rodar a aplicação refatorada:
+```bash
 npm install
 npm start
 ```
@@ -398,10 +413,16 @@ Acesse `http://localhost:3000/` ou execute os testes via arquivo `api.http`.
 #### Projeto 3 — `task-manager-api`
 ```bash
 cd task-manager-api
-# Invocar a skill pelo comando registrado na ferramenta
+
+# No Claude Code:
 claude "/refactor-arch"
 
-# Para rodar a aplicação refatorada
+# No Antigravity:
+# Digite /refactor-arch no chat ou execute via agy CLI
+```
+
+Para rodar a aplicação refatorada:
+```bash
 pip install -r requirements.txt
 python seed.py
 python app.py
@@ -419,9 +440,14 @@ curl http://localhost:5000/reports/summary
 
 ```
 mba-ia-refactor-projects-skill/
+├── .agents/
+│   └── skills/
+│       └── refactor-arch/             # Suporte nativo ao Antigravity (AGY)
+│           ├── SKILL.md
+│           └── references/
 ├── .claude/
 │   └── skills/
-│       └── refactor-arch/             # Skill na raiz do repositório
+│       └── refactor-arch/             # Suporte ao Claude Code
 │           ├── SKILL.md
 │           └── references/
 │               ├── anti-patterns.md
@@ -429,22 +455,26 @@ mba-ia-refactor-projects-skill/
 │               ├── project-analysis.md
 │               ├── refactoring-playbook.md
 │               └── report-template.md
+├── GEMINI.md                          # Regras de workspace do Antigravity
 ├── reports/                           # Relatórios de auditoria gerados (Fase 2)
 │   ├── audit-project-1.md
 │   ├── audit-project-2.md
 │   └── audit-project-3.md
 ├── code-smells-project/               # Projeto 1 — Python/Flask (Refatorado MVC)
-│   ├── .claude/skills/refactor-arch/  # Cópia da skill
+│   ├── .agents/skills/refactor-arch/  # Skill Antigravity
+│   ├── .claude/skills/refactor-arch/  # Skill Claude Code
 │   ├── src/                           # Camadas MVC desacopladas
 │   ├── app.py
 │   └── requirements.txt
 ├── ecommerce-api-legacy/              # Projeto 2 — Node.js/Express (Refatorado MVC)
-│   ├── .claude/skills/refactor-arch/  # Cópia da skill
+│   ├── .agents/skills/refactor-arch/  # Skill Antigravity
+│   ├── .claude/skills/refactor-arch/  # Skill Claude Code
 │   ├── src/                           # Camadas MVC desacopladas
 │   ├── api.http
 │   └── package.json
 ├── task-manager-api/                  # Projeto 3 — Python/Flask (Refatorado MVC)
-│   ├── .claude/skills/refactor-arch/  # Cópia da skill
+│   ├── .agents/skills/refactor-arch/  # Skill Antigravity
+│   ├── .claude/skills/refactor-arch/  # Skill Claude Code
 │   ├── config/
 │   ├── controllers/                   # Nova camada de Controllers
 │   ├── models/

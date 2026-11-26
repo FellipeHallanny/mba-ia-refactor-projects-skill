@@ -125,6 +125,9 @@ Para funcionar em Python (Flask/SQLAlchemy), Node.js (Express), C# (.NET / ASP.N
 3. **Múltiplos Níveis de Organização Inicial dos Projetos**:
    - *Desafio*: O `code-smells-project` era um monolito de 4 arquivos misturados, enquanto o `task-manager-api` já possuía pastas `models/` e `routes/`, mas carecia de `controllers/`.
    - *Solução*: A Skill avalia a topologia atual e aplica a refatoração incremental necessária: nos monolitos ela cria toda a árvore MVC; no projeto parcialmente organizado ela introduz a camada faltante (`controllers/`), move a orquestração e refatora os modelos sem destruir a estrutura existente.
+4. **Tratamento Rigoroso de Segredos (Zero Leaked Secrets as Defaults)**:
+   - *Desafio*: Na extração para `os.getenv` / `process.env`, manter os segredos auditados (senhas e chaves privadas) como valores padrão/fallback no código-fonte perpetua a exposição do segredo em controle de versão.
+   - *Solução*: Aplicação da regra estrita no playbook e na Fase 3: nenhum segredo apontado na auditoria pode permanecer como default. Segredos reais utilizam fallbacks vazios (`""`) ou desativação segura por padrão (`SMTP_ENABLED = 0`), chaves de sessão usam placeholders dummy explícitos de desenvolvimento, e cada projeto disponibiliza um arquivo `.env.example` documentando as variáveis necessárias.
 
 ---
 
@@ -464,12 +467,14 @@ mba-ia-refactor-projects-skill/
 │   ├── .agents/skills/refactor-arch/  # Skill Antigravity
 │   ├── .claude/skills/refactor-arch/  # Skill Claude Code
 │   ├── src/                           # Camadas MVC desacopladas
+│   ├── .env.example                   # Template de variáveis sem segredos reais
 │   ├── app.py
 │   └── requirements.txt
 ├── ecommerce-api-legacy/              # Projeto 2 — Node.js/Express (Refatorado MVC)
 │   ├── .agents/skills/refactor-arch/  # Skill Antigravity
 │   ├── .claude/skills/refactor-arch/  # Skill Claude Code
 │   ├── src/                           # Camadas MVC desacopladas
+│   ├── .env.example                   # Template de variáveis sem segredos reais
 │   ├── api.http
 │   └── package.json
 ├── task-manager-api/                  # Projeto 3 — Python/Flask (Refatorado MVC)
@@ -480,6 +485,7 @@ mba-ia-refactor-projects-skill/
 │   ├── models/
 │   ├── routes/
 │   ├── services/
+│   ├── .env.example                   # Template de variáveis sem segredos reais
 │   ├── app.py
 │   ├── seed.py
 │   └── requirements.txt

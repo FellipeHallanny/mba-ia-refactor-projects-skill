@@ -80,7 +80,7 @@ O objetivo desta fase é reestruturar o projeto no padrão **MVC (Model-View-Con
    - `references/mvc-guidelines.md` (Estrutura e responsabilidade de cada camada)
    - `references/refactoring-playbook.md` (Transformações concretas antes/depois)
 2. Criar a estrutura limpa de diretórios:
-   - `config/` (ou `src/config/`): Configurações centralizadas, carregamento de variáveis de ambiente com defaults seguros (sem credenciais hardcoded).
+   - `config/` (ou `src/config/`): Configurações centralizadas e leitura de variáveis de ambiente com defaults seguros (proibido manter senhas ou secrets como valor default; nenhum segredo auditado pode virar fallback). Criação de `.env.example`.
    - `models/` (ou `src/models/`): Entidades de dados isoladas por domínio, abstração de acesso ao banco com queries parametrizadas (eliminando SQL Injection), sanitização e hashes seguros.
    - `controllers/` (ou `src/controllers/`): Orquestradores de requisição/resposta, validação de payload e coordenação dos models, isolando a regra de negócio das rotas HTTP.
    - `views/` ou `routes/` (ou `src/routes/`): Definição estrita de endpoints, métodos HTTP e mapeamento para seus respectivos controllers.
@@ -89,7 +89,7 @@ O objetivo desta fase é reestruturar o projeto no padrão **MVC (Model-View-Con
 3. Aplicar as transformações do playbook:
    - Eliminar God Classes e separar responsabilidades por entidade/domínio.
    - Substituir concatenações SQL por consultas parametrizadas com bind variables.
-   - Eliminar credenciais hardcoded e backdoors administrativos inseguros.
+   - Eliminar credenciais hardcoded e backdoors administrativos inseguros, garantindo que nenhum segredo auditado seja mantido como valor default no código.
    - Substituir algoritmos obsoletos de hashing (MD5, SHA1 ou cifras manuais) por padrões seguros.
    - Resolver Queries N+1 utilizando queries com JOIN, subconsultas ou carregamento em lote.
    - Transformar Callback Hell em funções assíncronas limpas com `async/await` e tratamento de erros com `try/catch`.

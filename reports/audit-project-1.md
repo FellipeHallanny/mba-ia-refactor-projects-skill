@@ -32,7 +32,7 @@ Recommendation: Remover os endpoints backdoor ou restringi-los a ambiente de tes
 File: app.py:7; controllers.py:289
 Description: A chave de segurança da aplicação (`SECRET_KEY = "minha-chave-super-secreta-123"`) está fixada no código-fonte e é exposta abertamente no JSON de resposta do endpoint `/health`.
 Impact: Quebra do segredo criptográfico de sessão e assinatura de tokens da aplicação.
-Recommendation: Mover segredos para variáveis de ambiente (`os.getenv`) carregadas centralizadamente em `config/settings.py` e sanear a resposta do `/health`.
+Recommendation: Mover segredos para variáveis de ambiente (`os.getenv`) carregadas centralizadamente em `config/settings.py` (usando chave dummy inofensiva de desenvolvimento, JAMAIS mantendo 'minha-chave-super-secreta-123' como default), fornecer `.env.example` e sanear a resposta do `/health`.
 
 ### [CRITICAL] Armazenamento de Senha em Texto Claro
 File: models.py:105-120, 122-131; database.py:76-83

@@ -19,8 +19,10 @@ No contexto de APIs RESTful e serviços backend:
 ### `config/` (Camada de Configuração)
 - **Responsabilidade**: Centralizar todas as configurações da aplicação, portas, chaves secretas e credenciais de banco ou APIs externas.
 - **Regras**:
-  - Proibido manter senhas ou secrets em texto puro no código.
-  - Carregar valores de variáveis de ambiente (`os.getenv()` em Python, `process.env` em Node.js, `IConfiguration` / `appsettings.json` com variáveis de ambiente no C#/.NET) com fallbacks seguros para desenvolvimento.
+  - Proibido manter senhas ou secrets em texto puro no código, **inclusive como valores default de `os.getenv` / `process.env` / `IConfiguration`**.
+  - Segredos auditados (chaves privadas, senhas reais de banco/SMTP) **NUNCA** devem ser reutilizados como valor padrão no código.
+  - Carregar valores de variáveis de ambiente com fallbacks vazios (`""`) para segredos reais ou dummies genéricos e inofensivos de desenvolvimento (ex: `"dev-insecure-key-change-in-production"`).
+  - Disponibilizar um arquivo `.env.example` documentando as variáveis exigidas pela aplicação.
   - Exportar um objeto, classe ou Options Pattern unificado (`IOptions<T>` no .NET).
 
 ### `models/` (Camada de Modelos e Dados)

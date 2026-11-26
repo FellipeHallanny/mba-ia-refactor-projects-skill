@@ -124,6 +124,16 @@ var rows = await conn.QueryAsync<Product>("SELECT * FROM Products WHERE Id = @Id
 ### Problema:
 Chaves e senhas confidenciais salvas diretamente no código.
 
+> [!CAUTION]
+> **REGRA MANDATÓRIA DE SEGURANÇA (Zero Leaked Secrets as Defaults):**
+> É estritamente **PROIBIDO** mover os segredos apontados na auditoria para os valores de fallback/default de `os.getenv(...)`, `process.env.*` ou arquivos de configuração versionados. Fazer isso mantém o segredo exposto no repositório e viola as diretrizes de segurança.
+> 
+> **Diretrizes para a Fase 3:**
+> 1. Segredos reais (chaves de API de produção, senhas de banco, senhas de SMTP, tokens privados) devem ter fallback vazio (`""`) ou requerer injeção explícita via ambiente.
+> 2. Se um fallback local for estritamente necessário para desenvolvimento (ex: `SECRET_KEY` de sessão local), ele deve ser um valor dummy explicitamente inseguro e documentado (ex: `"dev-insecure-key-change-in-production"`), **JAMAIS** a senha ou chave auditada.
+> 3. Serviços sensíveis opcionais (como SMTP de notificações) devem ter flag de ativação desligada por padrão (`SMTP_ENABLED = os.getenv("SMTP_ENABLED", "0") == "1"`).
+> 4. Toda aplicação deve incluir um arquivo `.env.example` documentando as variáveis necessárias sem valores reais.
+
 ### Antes:
 ```python
 # app.py
@@ -137,28 +147,36 @@ const config = {
 };
 ```
 
-### Depois:
+### Depois (Correto — Sem segredos auditados em fallbacks):
 ```python
 # config/settings.py
 import os
 
 class Config:
-    SECRET_KEY = os.getenv("SECRET_KEY", "dev-fallback-key-do-not-use-in-prod")
+    # Dummy explícito para desenvolvimento local, NUNCA o segredo auditado
+    SECRET_KEY = os.getenv("SECRET_KEY", "dev-insecure-key-change-in-production")
     DEBUG = os.getenv("FLASK_DEBUG", "0") == "1"
     DB_PATH = os.getenv("DB_PATH", "loja.db")
+
+    # Credenciais reais exigem injeção externa; fallback vazio
+    SMTP_USER = os.getenv("SMTP_USER", "")
+    SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
+    SMTP_ENABLED = os.getenv("SMTP_ENABLED", "0") == "1"
 ```
 ```javascript
 // src/config/settings.js
 module.exports = {
     port: process.env.PORT || 3000,
-    dbPass: process.env.DB_PASS || "dev_default_pass",
-    paymentGatewayKey: process.env.PAYMENT_GATEWAY_KEY || "dev_gateway_key",
-    smtpUser: process.env.SMTP_USER || "no-reply@dev.local"
+    dbPass: process.env.DB_PASS || "",
+    // Fallback dummy de teste, NUNCA a chave 'pk_live_...' vazada
+    paymentGatewayKey: process.env.PAYMENT_GATEWAY_KEY || "pk_test_sample_key",
+    smtpUser: process.env.SMTP_USER || ""
 };
 ```
 ```csharp
 // C# / .NET (appsettings.json + IConfiguration / Options Pattern)
-// appsettings.json: { "Security": { "SecretKey": "...", "GatewayKey": "..." } }
+// appsettings.json (Apenas placeholders, nunca segredos de produção):
+// { "Security": { "SecretKey": "dev-insecure-key-change-in-production", "GatewayKey": "" } }
 public class SecurityOptions {
     public string SecretKey { get; set; } = string.Empty;
     public string GatewayKey { get; set; } = string.Empty;

@@ -32,7 +32,7 @@ Recommendation: Substituir pelo módulo nativo `crypto` do Node.js utilizando `c
 File: src/utils.js:1-7
 Description: Configurações sensíveis (`dbUser: "admin_master"`, `dbPass: "senha_super_secreta_prod_123"`, `paymentGatewayKey: "pk_live_1234567890abcdef"`) estão inseridas estaticamente em código versionável.
 Impact: Exposição irreversível de credenciais em repositórios de código.
-Recommendation: Extrair parâmetros para variáveis de ambiente lidas através de `process.env` em `src/config/settings.js`.
+Recommendation: Extrair parâmetros para variáveis de ambiente lidas através de `process.env` em `src/config/settings.js` com fallbacks vazios ou dummies de teste (JAMAIS mantendo 'senha_super_secreta_prod_123' ou 'pk_live_...' como defaults no código). Fornecer arquivo `.env.example`.
 
 ### [HIGH] Callback Hell / Pirâmide da Morte Assíncrona
 File: src/AppManager.js:37-77, 83-128

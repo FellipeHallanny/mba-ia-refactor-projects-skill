@@ -20,13 +20,13 @@ Recommendation: Migrar para hashing moderno com salt (PBKDF2/SHA-256 ou bcrypt) 
 File: services/notification_service.py:7-10
 Description: Configurações de autenticação de e-mail com host, porta e credenciais reais (`self.email_user = 'taskmanager@gmail.com'`, `self.email_password = 'senha123'`) estão declaradas diretamente no construtor do serviço.
 Impact: Exposição de credenciais de e-mail corporativo em repositórios de código.
-Recommendation: Mover todas as credenciais SMTP para variáveis de ambiente carregadas via `config/settings.py`.
+Recommendation: Mover todas as credenciais SMTP para variáveis de ambiente carregadas via `config/settings.py`, com fallback vazio e desativação por padrão (JAMAIS manter a senha vazada 'senha123' como default no código). Fornecer arquivo `.env.example`.
 
 ### [CRITICAL] Hardcoded SECRET_KEY e Configurações de Banco
 File: app.py:11-13
 Description: `app.config['SECRET_KEY'] = 'super-secret-key-123'` e `app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///tasks.db'` estão fixados no código-fonte do entrypoint.
 Impact: Insegurança na assinatura de cookies de sessão e impossibilidade de configurar bancos de dados diferentes entre ambientes (dev, staging, prod).
-Recommendation: Centralizar as configurações em classe `Config` com leitura via `os.getenv()`.
+Recommendation: Centralizar as configurações em classe `Config` com leitura via `os.getenv()`, utilizando chave dummy inofensiva de desenvolvimento (JAMAIS manter 'super-secret-key-123' como default). Fornecer arquivo `.env.example`.
 
 ### [HIGH] Fat Routes / Ausência da Camada de Controllers
 File: routes/task_routes.py:11-299; routes/user_routes.py:10-211; routes/report_routes.py:12-220
